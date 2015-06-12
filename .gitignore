@@ -1,0 +1,9 @@
+## Mac ##
+.DS_Store
+
+## ipython ##
+.ipython_checkpoints
+
+## python ##
+*.pyc
+
