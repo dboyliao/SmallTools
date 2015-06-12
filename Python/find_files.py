@@ -1,7 +1,7 @@
-#!/Users/DboyLiao/.pyenv/versions/py341/bin/python
+#!/usr/bin/python
 # -*- encode: utf-8 -*-
 
-#from __future__ import print_function
+from __future__ import print_function
 import sys, os
 import shutil
 
@@ -18,10 +18,10 @@ if __name__ == "__main__":
 
     import argparse
 
-    desc = """
-    Walk throuhg `src` to find all files with surfix in `surfixs` and copy it to `dest`
-    """
-    parser = argparse.ArgumentParser(description=desc)
+    desc = "Walk throuhg `src` to find all files with surfix in `surfixs` and copy it to `dest`"
+
+    epilog = "Example: find_files -f ~ -t ~/temp -s txt c cpp md"
+    parser = argparse.ArgumentParser(description=desc, epilog = epilog)
     parser.add_argument("-f", dest='from_dir', metavar = 'from',
                          required = True,
                          help= "source directory")
@@ -31,8 +31,8 @@ if __name__ == "__main__":
     parser.add_argument("-s", '--surfixs', dest = "surfixs",
                         action = "store",
                         nargs = '*',
-                        default = ['jpg', 'png', 'jpeg'],
-                        metavar = 'surfixs', help = "file surfixs to match")
+                        default = ['jpg', 'gif', 'png', 'jpeg'],
+                        metavar = 'surfixs', help = "file surfixs to match. Default are 'jpg', 'gif', 'png' and 'jepg'.")
     try:
         args = parser.parse_args()
         print("Begin process....")
