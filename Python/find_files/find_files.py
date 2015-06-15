@@ -12,6 +12,7 @@ def copy_file(src, dest, file_surfixs = ["jpg", "png"]):
             if sum(map(file_name.endswith, file_surfixs)) > 0:
                 count += 1
                 shutil.copy2(os.path.abspath(os.path.join(rel_path, file_name)), os.path.join(dest, file_name))
+                print(os.path.abspath(os.path.join(rel_path, file_name)) + " copied.")
     print("Total number of files copied: {count}".format(count = count), file = sys.stdout)
 
 if __name__ == "__main__":
