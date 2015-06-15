@@ -2,7 +2,7 @@
 
 This short python script is used for copying files with specific surfixes from 
 
-source directory to destination directory.
+source directory and all its subdirectories to destination directory.
 
 ## Basic Usage
 
