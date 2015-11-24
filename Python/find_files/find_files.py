@@ -23,10 +23,10 @@ if __name__ == "__main__":
 
     epilog = "Example: find_files -f ~ -t ~/temp -s txt c cpp md"
     parser = argparse.ArgumentParser(description=desc, epilog = epilog)
-    parser.add_argument("-f", dest='from_dir', metavar = 'from',
+    parser.add_argument("-f", "--from", dest='from_dir', metavar = 'from',
                          required = True,
                          help= "source directory")
-    parser.add_argument("-t", dest='dest_dir', metavar = 'to',
+    parser.add_argument("-t", "--to", dest='dest_dir', metavar = 'to',
                          required = True,
                          help = "destination directory")
     parser.add_argument("-s", '--surfixs', dest = "surfixs",
