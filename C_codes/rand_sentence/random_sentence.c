@@ -12,7 +12,8 @@ char *sentences[] = {
     "We are twice armed if we fight with faith. -- Plato",
     "Everything that is done in the world is done by hope. -- Martin Luther",
     "Young man, in mathematics you don't understand things. You just get used to them. -- John von Neumann",
-    "In most sciences one generation tears down what another has built and what one has established another undoes. In mathematics alone each generations adds a new story to the old structure. -- Hermann Hankel"
+    "In most sciences, one generation tears down what another has built and what one has established another undoes. In mathematics alone, each generations adds a new story to the old structure. -- Hermann Hankel",
+    "Two things are infinite: the universe and human stupidity. But the universe I'm not quite sure. -- Albert Einstein"
 };
 
 int main()
