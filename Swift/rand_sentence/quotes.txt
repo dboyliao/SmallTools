@@ -13,3 +13,4 @@ The biggest risk is not taking any risk. In a world that changing really quickly
 UNIX is basically a simple operating system, but you have to be a genius to understand the simplicity. -- Dennis Ritchie
 Wonder is the beginning of wisdom. -- Socrates
 I'm a pessimist because of intelligence, but an optimist because of will. -- Antonio Gramsci
+Life is really simple, but we insist on making it complicated.                               
