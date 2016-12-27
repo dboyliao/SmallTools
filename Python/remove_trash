@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import argparse
+import os
+import subprocess
+
+def main(verbose = False):
+
+    for current_dir, dirs, fnames in os.walk(os.path.abspath(".")):
+
+        for dirname in dirs:
+            if dirname in ["__pycache__"]:
+                path = os.path.join(current_dir, dirname)
+                if verbose:
+                    print("removing {}".format(path))
+                subprocess.call(["rm", "-r", path])
+
+        for fname in fnames:
+            if fname in [".DS_Store"]:
+                path = os.path.join(current_dir, fname)
+                if verbose:
+                    print("removing {}".format(path))
+                subprocess.call(["rm", path])
+
+            _, ext = os.path.splitext(fname)
+            if ext in [".pyc"]:
+                path = os.path.join(current_dir, fname)
+                if verbose:
+                    print("removing {}".format(path))
+                subprocess.call(["rm", path])
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--verbose", action = "store_true",
+                        help = "running in verbose mode.", dest = "verbose")
+
+    args = parser.parse_args()
+    main(args.verbose)

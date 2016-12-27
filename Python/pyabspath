@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import os, sys
+
+def main():
+    try:
+        path = sys.argv[1]
+    except IndexError:
+        path = "."
+
+    print os.path.abspath(path)
+
+main()

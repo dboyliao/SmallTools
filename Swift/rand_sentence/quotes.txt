@@ -13,4 +13,13 @@ The biggest risk is not taking any risk. In a world that changing really quickly
 UNIX is basically a simple operating system, but you have to be a genius to understand the simplicity. -- Dennis Ritchie
 Wonder is the beginning of wisdom. -- Socrates
 I'm a pessimist because of intelligence, but an optimist because of will. -- Antonio Gramsci
-Life is really simple, but we insist on making it complicated.                               
+Life is really simple, but we insist on making it complicated.
+Good, he did not have enough imagination to become a mathematician. -- David Hilbert
+The scientists of today think deeply instead of clearly. One must be sane to think clearly, but one can think deeply and be quite insane. -- Nikola Tesla
+Let the future tell the truth, and evaluate each one according to his work and accomplishments. The present is theirs; the future, for which I have really worked, is mine. -- Nikola Tesla
+It's really just a matter of your favorite color. -- Robert C. Martin
+Know how to solve every problem that has been solved. -- Richard Feynman
+In theory, there is no difference between theory and practice. But, in practice, there is. -- Jan L. A. van de Snepscheut
+Software and cathedrals are much the same - first we build them, then we pray. -- Sam Redwine
+The world has enough for everyone's need, but not enough for everyone's greed. -- Mahatma Gandhi
+You need the willingness to fail all the time -- John Backus

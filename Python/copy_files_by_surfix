@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import print_function
+import os
+import argparse
+import subprocess
+
+def main(source, surfixs, target, verbose = False):
+    subprocess.call(["mkdir", "-p", target])
+    target_dir = os.path.abspath(target)
+
+    for current_dir, dirs, fnames in os.walk(source):
+        for fname in fnames:
+            if any(list(map(fname.endswith, surfixs))):
+                source_path = os.path.abspath(os.path.join(current_dir, fname))
+                target_path = os.path.abspath(os.path.join(target_dir, fname))
+                if verbose:
+                    print("copying {} to {}".format(source_path, target_path))
+                subprocess.call(["cp", source_path, target_path])
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source", help = "directory where to find source files")
+    parser.add_argument("target", help = "target directory")
+    parser.add_argument("--surfixs", "-s", help = "surfixs of the images. (default: [jpg, png])",
+                        dest = "surfixs", default = ["jpg", "png"], nargs = "+")    
+    parser.add_argument("--verbose", "-v", help = "run in verbose mode",
+                        action = "store_true", dest = "verbose")
+    args = parser.parse_args()
+
+    main(args.source, args.surfixs, args.target, args.verbose)

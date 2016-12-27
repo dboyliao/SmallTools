@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import subprocess
+import sys
+
+def main(argv):
+
+    repeat_time = int(argv[1])
+    for _ in range(repeat_time):
+        try:
+            subprocess.call(argv[2:])
+        except Exception:
+            return 1
+
+    return 0
+
+if __name__ == "__main__":
+
+    main(sys.argv)
