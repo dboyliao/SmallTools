@@ -8,7 +8,9 @@ def is_executable(path):
 
 def remove_file(path, run_dry = False, verbose = False):
     if is_executable(path):
-        if verbose:
+        if run_dry:
+            print("Would Removing {}".format(path))
+        elif verbose:
             print("Removing {}".format(path))
         if not run_dry:
             os.remove(path)
@@ -26,7 +28,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("root_path", metavar = "ROOT_DIR",
-                        help = "root directory where to start with.")
+                        nargs='?', default=os.getcwd(),
+                        help = "root directory where to start with (default: '.')")
     parser.add_argument("-r", "--recursive", dest = "recursive",
                         help = "remove executable recursively (default: false)",
                         action = "store_true")
