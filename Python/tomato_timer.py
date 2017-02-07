@@ -3,9 +3,13 @@
 # https://en.wikipedia.org/wiki/Pomodoro_Technique
 from __future__ import print_function
 from time import sleep
+from datetime import datetime
 import sys
 import subprocess as sp
 import argparse
+
+if sys.version_info.major < 3:
+    input = raw_input
 
 class _Talker(object):
     """
@@ -34,6 +38,14 @@ class _Talker(object):
         """
         sp.call([self._cmd] + list(options) + [msg])
 
+def simple_log(msg, dest = sys.stdout, wait = False):
+    d = datetime.now()
+    log_msg = "{}: {}".format(d, msg)
+    if wait:
+        input(log_msg)
+    else:
+        print(log_msg, file = dest)
+
 def main(num_cycles = 4, minutes = 25.0, break_time = 5.0, talker_options = ""):
     """
     main function
@@ -49,7 +61,7 @@ def main(num_cycles = 4, minutes = 25.0, break_time = 5.0, talker_options = ""):
     try:
         talker = _Talker()
     except NotImplementedError as e:
-        print(e)
+        simple_log(e, dest = sys.stderr)
         sys.exit(1)
 
     options = talker_options.split(" ")
@@ -58,6 +70,7 @@ def main(num_cycles = 4, minutes = 25.0, break_time = 5.0, talker_options = ""):
 
     # start clock
     talker.say("start clock", options)
+    simple_log("start clock")
     while num_cycles > 0:
 
         # wait for one cycle
@@ -75,6 +88,8 @@ def main(num_cycles = 4, minutes = 25.0, break_time = 5.0, talker_options = ""):
         ## playing inter-cycle break start message (except for the last cycle)
         if num_cycles > 1:
             talker.say(msg, options)
+            simple_log("{} (press return/enter to continue the clock)".format(msg), wait = True)
+            simple_log("timer continue")
 
         ## wait for inter-cycle break
         sleep(break_seconds)
@@ -83,15 +98,19 @@ def main(num_cycles = 4, minutes = 25.0, break_time = 5.0, talker_options = ""):
         if num_cycles > 1:
             msg = "break time over, get back to work"
             talker.say(msg, options)
+            simple_log("{} (press return/enter to continue the clock)".format(msg), wait = True)
+            simple_log("timer continue")
 
         num_cycles -= 1 # count down.
 
     # all cycles done. Taking long break.
-    talker.say("take a long break", options)
+    msg = "take a long break"
+    simple_log(msg)
+    talker.say(msg, options)
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description = "simple tomato timer: https://en.wikipedia.org/wiki/Pomodoro_Technique")
     parser.add_argument("-n", "--number-cycles", dest = "num_cycles",
                         metavar = "INTEGER", type = int,
                         help = "number of cycles (default: 4)",
@@ -106,7 +125,7 @@ if __name__ == "__main__":
                         default = 5.0)
     parser.add_argument("-t", "--talker-options", dest = "talker_options",
                         metavar = "STRING",
-                        help = "options for the talker (ex: '-v Fred' for Mac)",
+                        help = "options for the talker (ex: -t '-v Fred' for Mac)",
                         default = "")
     args = parser.parse_args()
 
