@@ -91,11 +91,10 @@ def main(num_cycles = 4, minutes = 25.0, break_time = 5.0, talker_options = ""):
             simple_log("{} (press return/enter to continue the clock)".format(msg), wait = True)
             simple_log("timer continue")
 
-        ## wait for inter-cycle break
-        sleep(break_seconds)
+            ## wait for inter-cycle break
+            sleep(break_seconds)
 
-        ## playing inter-cycle break over message (except for the last cycle)
-        if num_cycles > 1:
+            ## playing inter-cycle break over message (except for the last cycle)
             msg = "break time over, get back to work"
             talker.say(msg, options)
             simple_log("{} (press return/enter to continue the clock)".format(msg), wait = True)
@@ -105,8 +104,8 @@ def main(num_cycles = 4, minutes = 25.0, break_time = 5.0, talker_options = ""):
 
     # all cycles done. Taking long break.
     msg = "take a long break"
-    simple_log(msg)
     talker.say(msg, options)
+    simple_log(msg, wait = True)
 
 if __name__ == "__main__":
 

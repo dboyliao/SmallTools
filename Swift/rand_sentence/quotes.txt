@@ -23,3 +23,11 @@ In theory, there is no difference between theory and practice. But, in practice,
 Software and cathedrals are much the same - first we build them, then we pray. -- Sam Redwine
 The world has enough for everyone's need, but not enough for everyone's greed. -- Mahatma Gandhi
 You need the willingness to fail all the time -- John Backus
+All models are wrong, but some are useful. -- George E. P. Box
+Making mistakes is the privilege of the active – of those who can correct their mistakes and put them right. -- Ingvar Kamprad (Founder of IKEA)
+教 Emacs 指令給人, 可以荒廢他一晚; 教人創造 Emacs 指令, 可以誤他一生 -- Cindy Wang
+Give a man a new Emacs command and he can hack for a night; teach a man to make new Emacs commands and he can hack for a lifetime. -- Old Saying Among Programmers
+Only those who have the patience to do simple things perfectly ever acquire the skill to do difficult things easily. -- Friedrich Schiller
+If people do not believe that mathematics is simple, it is only because they do not realize how complicated life is. -- John von Neumann
+What I cannot create, I do not understand. -- Richard Feynman
+Any fool can write code that a computer can understand. Good programmers write code that humans can understand. -- Martin Fowler
