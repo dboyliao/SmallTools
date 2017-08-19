@@ -9,8 +9,13 @@ import os
 import yaml
 
 
-def bind(port, user_name, dest, host='127.0.0.1', ssh_port='22'):
-    config = _read_config().get("tunnel", {})
+if os.name != "posix":
+    print("Only support Unix/Linux System. Sorry....", file=sys.stderr)
+    sys.exit(3)
+
+
+def bind(port, user_name, dest, id_file=None, host='127.0.0.1', ssh_port='22'):
+    config = _read_config()
     if user_name:
         config["user_name"] = user_name
     if dest:
@@ -26,20 +31,30 @@ def bind(port, user_name, dest, host='127.0.0.1', ssh_port='22'):
     dest = config["dest"]
     host = config.get("host", host)
     ssh_port = config.get("ssh_port", ssh_port)
+    err_code = _ssh_forward(user_name, dest, port, id_file, host, ssh_port)
+    return err_code
 
-    ret = sp.call(["ssh", "-p", ssh_port, "-L"
-                   "{}:{}:{}".format(port, host, port),
-                   "{}@{}".format(user_name, dest),
-                   "-f", "-N"])
-    if ret:
-        return ret
-    return 0
+
+def _ssh_forward(user_name, dest, port, id_file=None, host="127.0.0.1", ssh_port='22'):
+    if id_file:
+        cmd = ["ssh", "-i", id_file,
+               "-p", ssh_port, 
+               "-L", "{port}:{host}:{port}".format(port=port, host=host),
+               "{}@{}".format(user_name, dest),
+               "-f", "-N"]
+    else:
+        cmd = ["ssh", "-p", ssh_port, "-L",
+                "{port}:{host}:{port}".format(port=port, host=host),
+                "{}@{}".format(user_name, dest),
+                "-f", "-N"]
+    err_code = sp.call(cmd)
+    return err_code
 
 
 def break_connect(**kwargs):
     dest = kwargs.get("dest", None)
     port = kwargs.get("port", None)
-    config = _read_config().get("tunnel", {})
+    config = _read_config()
     if dest:
         config["dest"] = dest
     assert config.get("dest", None) is not None, \
@@ -79,25 +94,49 @@ def ls_tunnel():
     out = out.decode('utf8')
     forward_matchs = [m for m in forward_pattern.finditer(out)]
     dest_matchs = [m for m in dest_pattern.finditer(out)]
-    for forward_m, dest_m in zip(forward_matchs, dest_matchs): 
-        port = forward_m.group(1)
-        host = forward_m.group(2)
-        user = dest_m.group(1)
-        dest = dest_m.group(2)
-        print("{host}:{port} --> {user}@{dest}:{port}".format(host=host,
-                                                              port=port,
-                                                              user=user,
-                                                              dest=dest))
+    if not dest_matchs:
+        print("No pipes detected")
+    else:
+        for forward_m, dest_m in zip(forward_matchs, dest_matchs): 
+            port = forward_m.group(1)
+            host = forward_m.group(2)
+            user = dest_m.group(1)
+            dest = dest_m.group(2)
+            print("{host}:{port} --> {user}@{dest}:{port}".format(host=host,
+                                                                  port=port,
+                                                                  user=user,
+                                                                  dest=dest))
     return 0
 
 
 def config():
-    user_name = input("user name: ")
-    dest = input("destination: ")
-    host = input("host: ")
-    ssh_port = input("ssh port: ")
+    data = _read_config()
 
-    data = {}
+    print("leave blank to use original configuration")
+    old_user_name = data.get("user_name", None)
+    prompt = old_user_name is None and \
+            "user name: " or \
+            "user name ({}): ".format(old_user_name)
+    user_name = input(prompt)
+
+    old_dest = data.get("dest", None)
+    prompt = old_dest is None and \
+            "destination: " or \
+            "destination ({}): ".format(old_dest)
+    dest = input(prompt)
+
+    old_host = data.get("host", None)
+    prompt = old_host is None and \
+             "host: " or \
+             "host ({}): ".format(old_host)
+    host = input(prompt)
+
+    old_ssh_port = data.get("ssh_port", None)
+    prompt = old_ssh_port is None and \
+             "ssh port: " or \
+             "ssh port ({}): ".format(old_ssh_port)
+    ssh_port = input(prompt)
+
     if user_name:
         data["user_name"] = user_name
     if dest:
@@ -133,7 +172,7 @@ def _read_config():
     if os.path.exists(config_path):
         with open(config_path, "r") as rf:
             config_content = yaml.load(rf)
-        return config_content
+        return config_content["tunnel"]
     else:
         return {}
 
@@ -158,7 +197,8 @@ def main(subcmd, **kwargs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("subcmd", metavar="SUB_COMMAND",
-                        help="subcommand [bind, break, ls-config, config, ls]")
+                        nargs='?', default='ls',
+                        help="subcommand [bind, break, ls-config, config, ls(default)]")
     parser.add_argument("-u", "--user-name", dest="user_name", 
                         metavar="USER_NAME",
                         default=None,
@@ -171,6 +211,10 @@ if __name__ == "__main__":
                         metavar="PORT",
                         default=None,
                         help="port to tunnel or break")
+    parser.add_argument("-i", "--id-file", metavar="PEM_FILE",
+                        dest="id_file",
+                        default=None,
+                        help="ssh identity file path")
     parser.add_argument('--host', metavar="HOST",
                         dest="host", default='127.0.0.1',
                         help="host address (default: 127.0.0.1)")
