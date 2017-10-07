@@ -203,7 +203,7 @@ def _read_config():
 
 
 if __name__ == "__main__":
-    # pylint: disable=line-too-long
+    # pylint: disable=line-too-long, C0103
     config_content = _read_config()
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="subcmd",
@@ -251,23 +251,26 @@ if __name__ == "__main__":
     # config parser
     config_parser = subparsers.add_parser("config",
                                           help="setup default configuration")
-    # def ls_config():
-    ls_config_parser = subparsers.add_parser("ls-config",
-                                             help="show current default config")
-    # pylint: enable=line-too-long
+    config_parser.add_argument("--show", action="store_true",
+                               help="show current default configurations")
+
     subcmd = parser.parse_args().subcmd
     argv = sys.argv[2:]
     if subcmd == "bind":
         bind_args = vars(bind_parser.parse_args(argv))
-        bind(**bind_args)
+        err_code = bind(**bind_args)
     elif subcmd == "break":
         break_args = vars(break_parser.parse_args(argv))
-        break_connect(**break_args)
+        err_code = break_connect(**break_args)
     elif subcmd == "ls":
-        ls_tunnel()
+        err_code = ls_tunnel()
     elif subcmd == "config":
-        config()
-    elif subcmd == "ls-config":
-        ls_config()
+        config_args = vars(config_parser.parse_args(argv))
+        if config_args["show"]:
+            err_code = ls_config()
+        else:
+            err_code = config()
     else:
         parser.print_help()
+        err_code = 1
+    sys.exit(err_code)
