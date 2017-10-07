@@ -31,3 +31,6 @@ Only those who have the patience to do simple things perfectly ever acquire the 
 If people do not believe that mathematics is simple, it is only because they do not realize how complicated life is. -- John von Neumann
 What I cannot create, I do not understand. -- Richard Feynman
 Any fool can write code that a computer can understand. Good programmers write code that humans can understand. -- Martin Fowler
+If I have a thousand ideas and only one turns out to be good, I am satisfied. -- Alfred Nobel
+Tell me and I’ll forget; Show me and I may remember; Involve me and I’ll understand. -- Chinese proverb
+見之不若知之，知之不若行之，學至於行之而止矣。行之，明也。 -- 《荀子 ‧ 儒效篇》
