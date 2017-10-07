@@ -14,7 +14,11 @@ if os.name != "posix":
     sys.exit(3)
 
 
-def bind(port, user_name, dest, id_file=None, host='127.0.0.1', ssh_port='22'):
+def bind(port, user_name=None, dest=None,
+         id_file=None, host='127.0.0.1', ssh_port='22'):
+    """
+    Binding local port to remote port
+    """
     config = _read_config()
     if user_name:
         config["user_name"] = user_name
@@ -35,7 +39,8 @@ def bind(port, user_name, dest, id_file=None, host='127.0.0.1', ssh_port='22'):
     return err_code
 
 
-def _ssh_forward(user_name, dest, port, id_file=None, host="127.0.0.1", ssh_port='22'):
+def _ssh_forward(user_name, dest, port,
+                 id_file=None, host="127.0.0.1", ssh_port='22'):
     if id_file:
         cmd = ["ssh", "-i", id_file,
                "-p", ssh_port, 
@@ -51,22 +56,25 @@ def _ssh_forward(user_name, dest, port, id_file=None, host="127.0.0.1", ssh_port
     return err_code
 
 
-def break_connect(**kwargs):
-    dest = kwargs.get("dest", None)
-    port = kwargs.get("port", None)
+def break_connect(dest=None, port=None):
+    """
+    Break connection to remote port
+    """
     config = _read_config()
     if dest:
         config["dest"] = dest
     assert config.get("dest", None) is not None, \
        "destination not given and can't find it in config file"
     dest = config["dest"]
-    p_ssh_tunnel = sp.Popen("ps aux | grep ssh | grep -- -L", shell=True, stdout=sp.PIPE)
-    p_dest = sp.Popen(["grep", dest], stdin=p_ssh_tunnel.stdout, stdout=sp.PIPE)
+    p_ssh_tunnel = sp.Popen("ps aux | grep ssh | grep -- -L",
+                            shell=True, stdout=sp.PIPE)
+    p_dest = sp.Popen(["grep", dest], 
+                      stdin=p_ssh_tunnel.stdout, stdout=sp.PIPE)
     if port:
-        print("Break pipe to {}:{}".format(dest, port))
+        print("Break pipe connecting {}:{}".format(dest, port))
         p_port = sp.Popen(["grep", port], stdin=p_dest.stdout, stdout=sp.PIPE)
-        p_kill = sp.Popen("awk '{ print $2 }' | xargs kill", 
-                          shell=True, 
+        p_kill = sp.Popen("awk '{ print $2 }' | xargs kill",
+                          shell=True,
                           stdin=p_port.stdout)
     else:
         print("Breaking all pipes to {}".format(dest))
@@ -81,13 +89,16 @@ def break_connect(**kwargs):
 
 
 def ls_tunnel():
+    """
+    List all port tunneling
+    """
     p_all_tunnel = sp.Popen("ps aux | grep ssh | grep -v grep | grep -- -L",
                             stdout=sp.PIPE,
                             shell=True)
     out, err = p_all_tunnel.communicate()
     if err:
         print(err, file=sys.stderr)
-        return 2 
+        return 2
 
     forward_pattern = re.compile(r"(\d*):([\d\w\.]*):\d*")
     dest_pattern = re.compile(r"([\w\d\.]*)@([\w\d\.]*)")
@@ -110,6 +121,9 @@ def ls_tunnel():
 
 
 def config():
+    """
+    Setup default configuration
+    """
     data = _read_config()
 
     print("leave blank to use original configuration")
@@ -124,6 +138,12 @@ def config():
             "destination: " or \
             "destination ({}): ".format(old_dest)
     dest = input(prompt)
+
+    old_id_file = data.get("id_file", None)
+    prompt = old_id_file is None and \
+             "id file: " or \
+             "id file ({}): ".format(old_id_file)
+    id_file = input(prompt)
 
     old_host = data.get("host", None)
     prompt = old_host is None and \
@@ -145,6 +165,8 @@ def config():
         data["host"] = host
     if ssh_port:
         data["ssh_port"] = ssh_port
+    if id_file:
+        dest["id_file"] = id_file
 
     config_path = _get_config_path()
     with open(config_path, "w") as wf:
@@ -152,6 +174,9 @@ def config():
 
 
 def ls_config():
+    """
+    List content of default configuration
+    """
     config_path = _get_config_path()
     if not os.path.exists(config_path):
         print("No config file found", file=sys.stderr)
@@ -177,49 +202,72 @@ def _read_config():
         return {}
 
 
-def main(subcmd, **kwargs):
-
-    if subcmd == "bind":
-        return bind(**kwargs)
-    elif subcmd == "config":
-        return config()
-    elif subcmd == "break":
-        return break_connect(**kwargs)
-    elif subcmd == "ls-config":
-        return ls_config()
-    elif subcmd == "ls":
-        return ls_tunnel()
-    else:
-        print("Unknown subcommand: {}".format(subcmd), file=sys.stderr)
-        return 2
-
-
 if __name__ == "__main__":
+    # pylint: disable=line-too-long
+    config_content = _read_config()
     parser = argparse.ArgumentParser()
-    parser.add_argument("subcmd", metavar="SUB_COMMAND",
-                        nargs='?', default='ls',
-                        help="subcommand [bind, break, ls-config, config, ls(default)]")
-    parser.add_argument("-u", "--user-name", dest="user_name", 
-                        metavar="USER_NAME",
-                        default=None,
-                        help="loging name")
-    parser.add_argument("-d", "--destination", dest="dest", 
-                        metavar="DESTINATION",
-                        default=None,
-                        help="destination address")
-    parser.add_argument("-p", "--port", dest="port", 
-                        metavar="PORT",
-                        default=None,
-                        help="port to tunnel or break")
-    parser.add_argument("-i", "--id-file", metavar="PEM_FILE",
-                        dest="id_file",
-                        default=None,
-                        help="ssh identity file path")
-    parser.add_argument('--host', metavar="HOST",
-                        dest="host", default='127.0.0.1',
-                        help="host address (default: 127.0.0.1)")
-    parser.add_argument("--ssh-port", metavar="SSH_PORT",
-                        dest="ssh_port", default='22',
-                        help="ssh port (default: 22)")
-    args = vars(parser.parse_args())
-    sys.exit(main(**args))
+    subparsers = parser.add_subparsers(dest="subcmd",
+                                       help="Subcommands")
+    # binding parser
+    bind_parser = subparsers.add_parser("bind",
+                                        help="binding local port to remote")
+    bind_parser.add_argument("port",
+                             help="port to bind")
+    bind_parser.add_argument("-u", "--user-name",
+                             dest="user_name",
+                             help="user name for login (default: %(default)s)",
+                             default=config_content.get("user_name", None))
+    bind_parser.add_argument("-d", "--destination",
+                             dest="dest", metavar="ADDRESS",
+                             help="destination address (default: %(default)s)",
+                             default=config_content.get("dest", None))
+    bind_parser.add_argument("-i", "--id-file",
+                             dest="id_file", metavar="ID_FILE",
+                             help="login id file (default: %(default)s)",
+                             default=config_content.get("id_file", None))
+    bind_parser.add_argument("-H", "--host",
+                             dest="host", metavar="ADDRESS",
+                             default="127.0.0.1",
+                             help="host address (default: %(default)s)")
+    bind_parser.add_argument("-P", "--ssh-port",
+                             dest="ssh_port", metavar="PORT",
+                             help="ssh port (default: %(default)s)",
+                             default=config_content.get("ssh_port", "22"))
+    # break_connect parser
+    break_parser = subparsers.add_parser("break",
+                                         help="break tunneling")
+    break_parser.add_argument("-d", "--destination",
+                              dest="dest",
+                              default=config_content.get("dest", None),
+                              help="destination to break connection (default: %(default)s)")
+    break_parser.add_argument("-p", "--port",
+                              dest="port",
+                              default=None,
+                              help=("port to break (default: %(default)s, "
+                                    " break all port)"))
+    # ls_tunnel parser
+    ls_tunnel_parser = subparsers.add_parser("ls",
+                                             help="list all tunneling")
+    # config parser
+    config_parser = subparsers.add_parser("config",
+                                          help="setup default configuration")
+    # def ls_config():
+    ls_config_parser = subparsers.add_parser("ls-config",
+                                             help="show current default config")
+    # pylint: enable=line-too-long
+    subcmd = parser.parse_args().subcmd
+    argv = sys.argv[2:]
+    if subcmd == "bind":
+        bind_args = vars(bind_parser.parse_args(argv))
+        bind(**bind_args)
+    elif subcmd == "break":
+        break_args = vars(break_parser.parse_args(argv))
+        break_connect(**break_args)
+    elif subcmd == "ls":
+        ls_tunnel()
+    elif subcmd == "config":
+        config()
+    elif subcmd == "ls-config":
+        ls_config()
+    else:
+        parser.print_help()
