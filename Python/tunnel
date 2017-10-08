@@ -13,28 +13,96 @@ if os.name != "posix":
     print("Only support Unix/Linux System. Sorry....", file=sys.stderr)
     sys.exit(3)
 
+DEFAULT_CONFIG_FILE = os.path.join(os.path.expanduser("~"), 
+                                   ".tunnel_config.yaml")
+
+
+class _ConfigParser(object):
+
+    def __init__(self, path=None):
+        if path and os.path.exists(path):
+            with open(path) as fid:
+                config_data = yaml.load(fid)
+        else:
+            config_data = {"HEAD": "default",
+                           "default": {}}
+        self._path = path
+        self._head = config_data.pop("HEAD")
+        self._data = config_data
+
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def data(self):
+        return self._data.copy()
+
+    @property
+    def head_data(self):
+        return self._data.get(self._head, {})
+
+    @property
+    def head(self):
+        return self._head
+
+    @head.setter
+    def head(self, new_head):
+        assert isinstance(new_head, str), \
+            "HEAD has to be string"
+        self._head = new_head
+
+    def get(self, key):
+        return self._data.get(key, None)
+
+    def set(self, key, value):
+        self._data[key] = value
+
+    def update(self, new_config):
+        assert isinstance(new_config, dict), \
+            "new config should be a dict, get {}".format(new_config)
+        if self._head in self._data:
+            self._data[self._head].update(new_config)
+        else:
+            self._data[self._head] = new_config
+
+    def save(self, path=DEFAULT_CONFIG_FILE):
+        with open(path, "w") as wf:
+            data = {}
+            data["HEAD"] = self._head
+            data.update(self._data)
+            yaml.dump(data, wf, default_flow_style=False)
+
+    def __str__(self):
+        data = {}
+        data[self._head] = self._data[self._head]
+        return yaml.dump(data,
+                         default_flow_style=False)
+
 
 def bind(port, user_name=None, dest=None,
          id_file=None, host='127.0.0.1', ssh_port='22'):
     """
     Binding local port to remote port
     """
-    config = _read_config()
+    config_parser = _ConfigParser(DEFAULT_CONFIG_FILE)
+    data = config_parser.data
+
     if user_name:
-        config["user_name"] = user_name
+        data["user_name"] = user_name
     if dest:
-        config["dest"] = dest
-    assert config.get("user_name", None) is not None, \
+        data["dest"] = dest
+    assert data.get("user_name", None) is not None, \
         "user name not given and can't find it in the config file"
-    assert config.get("dest", None) is not None, \
+    assert data.get("dest", None) is not None, \
         "destination not given and can't find it in the config file"
     assert port is not None, \
         "no port for tunneling"
 
-    user_name = config["user_name"]
-    dest = config["dest"]
-    host = config.get("host", host)
-    ssh_port = config.get("ssh_port", ssh_port)
+    user_name = data["user_name"]
+    dest = data["dest"]
+    host = data.get("host", host)
+    ssh_port = data.get("ssh_port", ssh_port)
     err_code = _ssh_forward(user_name, dest, port, id_file, host, ssh_port)
     return err_code
 
@@ -60,12 +128,13 @@ def break_connect(dest=None, port=None):
     """
     Break connection to remote port
     """
-    config = _read_config()
+    config_parser = _ConfigParser(DEFAULT_CONFIG_FILE)
+    data = config_parser.data
     if dest:
-        config["dest"] = dest
-    assert config.get("dest", None) is not None, \
+        data["dest"] = dest
+    assert data.get("dest", None) is not None, \
        "destination not given and can't find it in config file"
-    dest = config["dest"]
+    dest = data["dest"]
     p_ssh_tunnel = sp.Popen("ps aux | grep ssh | grep -- -L",
                             shell=True, stdout=sp.PIPE)
     p_dest = sp.Popen(["grep", dest], 
@@ -124,87 +193,94 @@ def config():
     """
     Setup default configuration
     """
-    data = _read_config()
+    print("leave blank to use original configuration", flush=True)
+    print("press ctrl-C/ctrl-D to interrupt", flush=True)
+    modified = False
+    config_parser = _ConfigParser(DEFAULT_CONFIG_FILE)
+    try:
+        old_head = config_parser.head
+        prompt = "HEAD ({}): ".format(old_head)
+        head = input(prompt)
+        if head:
+            config_parser.head = head
+            modified = True
+        data = config_parser.head_data
 
-    print("leave blank to use original configuration")
-    old_user_name = data.get("user_name", None)
-    prompt = old_user_name is None and \
-            "user name: " or \
-            "user name ({}): ".format(old_user_name)
-    user_name = input(prompt)
+        old_user_name = data.get("user_name", None)
+        prompt = old_user_name is None and \
+                "user name: " or \
+                "user name ({}): ".format(old_user_name)
+        user_name = input(prompt)
+        if user_name:
+            data["user_name"] = user_name
+            modified = True
 
-    old_dest = data.get("dest", None)
-    prompt = old_dest is None and \
-            "destination: " or \
-            "destination ({}): ".format(old_dest)
-    dest = input(prompt)
+        old_dest = data.get("dest", None)
+        prompt = old_dest is None and \
+                "destination: " or \
+                "destination ({}): ".format(old_dest)
+        dest = input(prompt)
+        if dest:
+            data["dest"] = dest
+            modified = True
 
-    old_id_file = data.get("id_file", None)
-    prompt = old_id_file is None and \
-             "id file: " or \
-             "id file ({}): ".format(old_id_file)
-    id_file = input(prompt)
+        old_id_file = data.get("id_file", None)
+        prompt = old_id_file is None and \
+                "id file: " or \
+                "id file ({}): ".format(old_id_file)
+        id_file = input(prompt)
+        if id_file:
+            data["id_file"] = id_file
+            modified = True
 
-    old_host = data.get("host", None)
-    prompt = old_host is None and \
-             "host: " or \
-             "host ({}): ".format(old_host)
-    host = input(prompt)
+        old_host = data.get("host", None)
+        prompt = old_host is None and \
+                "host: " or \
+                "host ({}): ".format(old_host)
+        host = input(prompt)
+        if host:
+            data["host"] = host
+            modified = True
 
-    old_ssh_port = data.get("ssh_port", None)
-    prompt = old_ssh_port is None and \
-             "ssh port: " or \
-             "ssh port ({}): ".format(old_ssh_port)
-    ssh_port = input(prompt)
-
-    if user_name:
-        data["user_name"] = user_name
-    if dest:
-        data["dest"] = dest
-    if host:
-        data["host"] = host
-    if ssh_port:
-        data["ssh_port"] = ssh_port
-    if id_file:
-        dest["id_file"] = id_file
-
-    config_path = _get_config_path()
-    with open(config_path, "w") as wf:
-        yaml.dump({"tunnel": data}, wf, default_flow_style=False)
+        old_ssh_port = data.get("ssh_port", None)
+        prompt = old_ssh_port is None and \
+                "ssh port: " or \
+                "ssh port ({}): ".format(old_ssh_port)
+        ssh_port = input(prompt)
+        if ssh_port:
+            data["ssh_port"] = ssh_port
+            modified = True
+    except (EOFError, KeyboardInterrupt):
+        print()
+    finally:
+        if modified:
+            print("Saving new configuration")
+            config_parser.update(data)
+            config_parser.save(DEFAULT_CONFIG_FILE)
+        print()
+        print("Current Config")
+        print("--------------")
+        print(config_parser)
+    return 0
 
 
 def ls_config():
     """
     List content of default configuration
     """
-    config_path = _get_config_path()
-    if not os.path.exists(config_path):
-        print("No config file found", file=sys.stderr)
+    if not os.path.exists(DEFAULT_CONFIG_FILE):
+        print("No config file found: {}".format(DEFAULT_CONFIG_FILE),
+              file=sys.stderr)
         return 2
-    with open(config_path, "r") as rf:
-        print(rf.read())
+    config_parser = _ConfigParser(DEFAULT_CONFIG_FILE)
+    print(config_parser)
     return 0
-
-
-def _get_config_path():
-    home_dir = os.path.expanduser("~")
-    config_path = os.path.join(home_dir, ".tunnel_config.yaml")
-    return config_path
-
-
-def _read_config():
-    config_path = _get_config_path()
-    if os.path.exists(config_path):
-        with open(config_path, "r") as rf:
-            config_content = yaml.load(rf)
-        return config_content["tunnel"]
-    else:
-        return {}
 
 
 if __name__ == "__main__":
     # pylint: disable=line-too-long, C0103
-    config_content = _read_config()
+    config_parser = _ConfigParser(DEFAULT_CONFIG_FILE)
+    config_content = config_parser.head_data
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="subcmd",
                                        help="Subcommands")
