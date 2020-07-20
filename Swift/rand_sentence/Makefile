@@ -1,9 +1,10 @@
-SWIFTC=xcrun -sdk macosx swiftc 
+SWIFTC=xcrun -sdk macosx swiftc
+FLAGS=''
 SOURCE=main.swift
 
 randomSentences:$(SOURCE)
 	@echo "Compiling $@..."
-	@$(SWIFTC) $(SOURCE) -o $@ && \
+	@$(SWIFTC) $(FLAGS) $(SOURCE) -o $@ && \
 	 echo "Copy executable to $$(realpath ../bin/$@)" && \
 	 cp -f $@ ../bin/$@
 	@make clean

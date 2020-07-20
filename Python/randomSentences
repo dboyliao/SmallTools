@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+import sys
+from random import choices
+
+def main():
+    quotes = sys.stdin.readlines()
+    print(choices(quotes, k=1)[0])
+
+if __name__ == '__main__':
+    main()

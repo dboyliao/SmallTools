@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+# -*- coding:utf8 -*-
+import argparse
+import tensorflow as tf
+
+
+def main(pb_file, logdir="log"):
+    graph_def = tf.GraphDef()
+    with tf.gfile.FastGFile(pb_file, "rb") as fid:
+        graph_def.ParseFromString(fid.read())
+    graph = tf.Graph()
+    with graph.as_default():
+        tf.import_graph_def(graph_def, name="")
+    tf.summary.FileWriter(logdir=logdir, graph=graph).close()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("pb_file", metavar="GRAPH.pb",
+                        help="input graph protobuf file")
+    parser.add_argument("-L", "--log-dir", dest="logdir",
+                        default="log",
+                        help="output tensorboard log directory (default: %(default)s)")
+    args = vars(parser.parse_args())
+    main(**args)
