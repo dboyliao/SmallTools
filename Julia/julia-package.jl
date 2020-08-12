@@ -39,4 +39,6 @@ function main()
     t(project_name)
 end
 
-main()
+if nameof(@__MODULE__) == :Main
+    main()
+end
