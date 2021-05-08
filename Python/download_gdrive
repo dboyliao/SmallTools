@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+# https://stackoverflow.com/questions/25010369/wget-curl-large-file-from-google-drive
+# https://sites.google.com/site/gdocs2direct/
+import requests
+import tqdm
+
+
+def download_file_from_google_drive(file_id, destination, chunk_size=32768):
+    def get_confirm_token(response):
+        for key, value in response.cookies.items():
+            if key.startswith("download_warning"):
+                return value
+
+        return None
+
+    def save_response_content(response, destination):
+        print(f"downloading to {destination}")
+        with open(destination, "wb") as f:
+            for chunk in tqdm.tqdm(
+                response.iter_content(chunk_size), unit=" bytes", unit_scale=chunk_size
+            ):
+                if chunk:  # filter out keep-alive new chunks
+                    f.write(chunk)
+
+    URL = "https://docs.google.com/uc?export=download"
+
+    session = requests.Session()
+
+    response = session.get(URL, params={"id": file_id}, stream=True)
+    token = get_confirm_token(response)
+
+    if token:
+        print(f"get token: {token}")
+        params = {"id": file_id, "confirm": token}
+        response = session.get(URL, params=params, stream=True)
+        save_response_content(response, destination)
+    else:
+        print(f"fail to get token for {file_id}")
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file_id", help="the id of the file on google drive")
+    parser.add_argument(
+        "--chunk-size",
+        dest="chunk_size",
+        default=32768,
+        help="the downloading chunk size [default: %(default)s]",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        dest="destination",
+        help="the output file name [default: %(default)s]",
+        default="saved_file.out",
+    )
+    args = vars(parser.parse_args())
+    download_file_from_google_drive(**args)

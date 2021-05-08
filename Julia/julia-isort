@@ -1,0 +1,33 @@
+#!/usr/bin/env julia --startup-file=no
+import ArgParse
+
+function main(io::IO; fpath::AbstractString)
+    println("sorting import for $(fpath)")
+    import_statements = Set{String}()
+    other_satements = ""
+    prefixs = ["import", "using"]
+    for line in readlines(fpath, keep=true)
+        if any([startswith(line, prefix) for prefix in prefixs])
+            import_statements = push!(import_statements, line)
+        elseif startswith(line, "#!")
+            print(io, line)
+        else
+            other_satements *= line
+        end
+    end
+    print(io, join(sort([line for line in import_statements])) * other_satements)
+end
+
+main(;fpath::AbstractString) = main(stderr, fpath=fpath)
+
+if nameof(@__MODULE__) == :Main
+    s = ArgParse.ArgParseSettings()
+    ArgParse.@add_arg_table! s begin
+        "fpath"
+        metavar = "FILE"
+        help = "the file to be sorted"
+        arg_type = String
+    end
+    args = ArgParse.parse_args(s, as_symbols = true)
+    main(;args...)
+end
