@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -u
 # https://stackoverflow.com/questions/25010369/wget-curl-large-file-from-google-drive
 # https://sites.google.com/site/gdocs2direct/
 import requests

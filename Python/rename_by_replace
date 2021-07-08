@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -u
 # -*- coding: utf-8 -*-
 
 """
@@ -10,6 +10,7 @@ desired characters. ex: replcae " " with "_".
 
 import os, argparse
 
+
 def main(args):
     replace_str = args.replace_str
     with_str = args.with_str
@@ -20,32 +21,49 @@ def main(args):
         for fname in fnames:
             if replace_str in fname:
                 old_name = os.path.join(current_dir, fname)
-                new_name = os.path.join(current_dir, fname.replace(replace_str, with_str))
+                new_name = os.path.join(
+                    current_dir, fname.replace(replace_str, with_str)
+                )
                 if verbose:
                     print("Rename {} to {}".format(old_name, new_name))
                 os.rename(old_name, new_name)
         for dirname in dirs:
             if replace_str in dirname:
                 old_name = os.path.join(current_dir, dirname)
-                new_name = os.path.join(current_dir, dirname.replace(replace_str, with_str))
+                new_name = os.path.join(
+                    current_dir, dirname.replace(replace_str, with_str)
+                )
                 if verbose:
                     print("Rename {} to {}".format(old_name, new_name))
                 os.rename(old_name, new_name)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog = "rename_by_replace",
-                                    description= __doc__)
-    parser.add_argument("-r", "--replace", dest = "replace_str",
-                        help = "string in the file name to be replaced", metavar = "STRING",
-                        default = " ")
-    parser.add_argument("-w", "--with", dest = "with_str",
-                        help = "string to be replaced with", metavar = "STRING",
-                        default = "_")
-    parser.add_argument("-p", "--path",
-                        help = "path to the target directory.", metavar = "PATH",
-                        dest = "path",
-                        default = ".")
-    parser.add_argument("-v", "--verbose", dest = "verbose", action = "store_true")
+    parser = argparse.ArgumentParser(prog="rename_by_replace", description=__doc__)
+    parser.add_argument(
+        "-r",
+        "--replace",
+        dest="replace_str",
+        help="string in the file name to be replaced",
+        metavar="STRING",
+        default=" ",
+    )
+    parser.add_argument(
+        "-w",
+        "--with",
+        dest="with_str",
+        help="string to be replaced with",
+        metavar="STRING",
+        default="_",
+    )
+    parser.add_argument(
+        "-p",
+        "--path",
+        help="path to the target directory.",
+        metavar="PATH",
+        dest="path",
+        default=".",
+    )
+    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true")
     args = parser.parse_args()
     main(args)

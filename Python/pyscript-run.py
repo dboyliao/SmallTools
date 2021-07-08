@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -u
 import datetime as dt
 import argparse
 from pathlib import Path
