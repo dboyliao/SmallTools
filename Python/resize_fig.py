@@ -24,7 +24,7 @@ def main(img_path, new_size, out_img):
             int(input("Enter the new width: ")),
             int(input("Enter the new height: ")),
         )
-    new_img = img.resize(new_size)
+    new_img = img.resize(new_size).convert("RGB")
     new_img.save(out_img)
 
 

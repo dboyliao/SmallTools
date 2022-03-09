@@ -15,11 +15,17 @@ def convert_mp4(input_video):
         return 1
     out_fname = f"{in_fname}.mp4"
     in_cap = cv2.VideoCapture(input_video)
+    if not in_cap.isOpened():
+        print(f"fail to open {input_video}")
+        return 1
     fps = in_cap.get(cv2.CAP_PROP_FPS)
     width = int(in_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(in_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     num_frames = int(in_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fourcc = cv2.VideoWriter_fourcc(*"MP4V")
+    if sys.platform == "darwin":
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    else:
+        fourcc = cv2.VideoWriter_fourcc(*"MP4V")
     writer = cv2.VideoWriter(out_fname, fourcc, fps, (width, height))
     num_digits = len(str(num_frames))
     fmt_str = f"[{{i:0{num_digits}d}}/{{num_frames}} {{percent:0.2f}}%] {{it_per_sec:0.2f}} it/s, eta {{eta:0.2f}} seconds"
@@ -56,10 +62,20 @@ def convert_mp4(input_video):
     )
     in_cap.release()
     writer.release()
+    return 0
+
+
+def main(input_videos):
+    ok = True
+    for input_video in input_videos:
+        print(f"converting {input_video}")
+        ok = convert_mp4(input_video) == 0 and ok
+        print("\n")
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_video", help="the input video file")
+    parser.add_argument("input_videos", nargs="+", help="the input video file")
     kwargs = vars(parser.parse_args())
-    sys.exit(convert_mp4(**kwargs))
+    sys.exit(main(**kwargs))
