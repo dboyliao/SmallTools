@@ -2,6 +2,7 @@
 import argparse
 from subprocess import run as _run
 from tempfile import TemporaryDirectory
+import sys
 
 
 def cmake_find_package(
@@ -10,6 +11,7 @@ def cmake_find_package(
     mode="EXIST",
     compiler_id="GNU",
     print_cmake_cmd=False,
+    dry_run=False,
 ):
     ok_flags = []
     with TemporaryDirectory(prefix="cmake_find_package_") as tmp_dir:
@@ -22,12 +24,15 @@ def cmake_find_package(
                 f"-DCOMPILER_ID={compiler_id}",
                 "--find-package",
             ]
-            if print_cmake_cmd:
-                print("Running CMake command:", " ".join(cmd))
-                print()
-            comp_proc = _run(cmd, cwd=tmp_dir, check=False, capture_output=True)
-            print(comp_proc.stdout.decode("utf8").strip())
-            ok_flags.append(comp_proc.returncode == 0)
+            if dry_run:
+                print("Would run CMake command:", " ".join(cmd))
+            elif print_cmake_cmd:
+                print("Will run CMake command:", " ".join(cmd))
+            if not dry_run:
+                comp_proc = _run(cmd, cwd=tmp_dir, check=False)
+                ok_flags.append(comp_proc.returncode == 0)
+            else:
+                ok_flags.append(True)
     ret_code = 0 if all(ok_flags) else 1
     return ret_code
 
@@ -53,5 +58,6 @@ if __name__ == "__main__":
         action="store_true",
         help="print the CMake command if given",
     )
+    parser.add_argument("-n", "--dry-run", action="store_true", help="dry run mode")
     kwargs = vars(parser.parse_args())
-    cmake_find_package(**kwargs)
+    sys.exit(cmake_find_package(**kwargs))
