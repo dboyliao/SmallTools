@@ -3,6 +3,7 @@ import argparse
 from subprocess import run as _run
 from tempfile import TemporaryDirectory
 import sys
+from shutil import which as _which
 
 
 def cmake_find_package(
@@ -13,11 +14,15 @@ def cmake_find_package(
     print_cmake_cmd=False,
     dry_run=False,
 ):
+    cmake = _which("cmake")
+    if cmake is None:
+        print("CMake not available on the system, abort")
+        return 1
     ok_flags = []
     with TemporaryDirectory(prefix="cmake_find_package_") as tmp_dir:
         for name in package_names:
             cmd = [
-                "cmake",
+                cmake,
                 f"-DNAME={name}",
                 f"-DLANGUAGE={language}",
                 f"-DMODE={mode}",
