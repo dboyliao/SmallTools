@@ -7,6 +7,7 @@ import argparse
 from os import get_terminal_size
 from time import sleep
 
+
 sys.path[:1] = [str(Path(__file__).parent)]
 
 from show_img_term import convert_ansci_color, to_color_str
@@ -15,18 +16,17 @@ TERM_HIGHT = get_terminal_size().lines
 
 
 def clear_screen():
-    print(chr(27) + "[2j")
-    print("\033c")
-    print("\x1bc")
+    print(chr(27) + "[2j\033c\x1bc", end="")
 
 
-def show_video_term(video_path):
+def show_video_term(video_path, fps=None):
     video = cv2.VideoCapture(video_path)
     if video is None:
         print(f"fail to read {video_path}")
         return 1
     num_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = video.get(cv2.CAP_PROP_FPS)
+    if fps is None:
+        fps = video.get(cv2.CAP_PROP_FPS)
     sleep_secs = 1 / fps
     print(f"number of frames: {num_frames}")
     scale = None
@@ -57,5 +57,6 @@ def show_video_term(video_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("video_path", help="the of video to show")
+    parser.add_argument("--fps", help="frames per second", type=float)
     kwargs = vars(parser.parse_args())
     sys.exit(show_video_term(**kwargs))
