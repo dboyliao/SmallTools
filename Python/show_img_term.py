@@ -42,28 +42,38 @@ def to_color_str(v):
     return f"\x1b[48;5;{v}m \x1b[0m"
 
 
-def show_img_term(img_path: str, adjust_to_height=False):
+def show_img_term(img_paths, adjust_to_height=False):
+    ret = 0
     try:
-        img = Image.open(img_path)
-    except FileNotFoundError:
-        print(f"fail to read {img_path}")
-        return 1
-    scale = TERM_WIDTH / img.width
-    if adjust_to_height:
-        scale = TERM_HEIGHT / img.height
-    if scale < 1:
-        img = img.resize((int(scale * img.width), int(scale * img.height)))
-    img = np.array(img, copy=False)
-    ansi_img = convert_ansci_color(img)
-    print(
-        "\n".join(["".join(row) for row in to_color_str(ansi_img)]),
-    )
-    return 0
+        for img_path in img_paths:
+            try:
+                img = Image.open(img_path)
+            except FileNotFoundError:
+                print(f"fail to read {img_path}")
+                ret = 1
+                continue
+            scale = TERM_WIDTH / img.width
+            if adjust_to_height:
+                scale = TERM_HEIGHT / img.height
+            if scale < 1:
+                img = img.resize((int(scale * img.width), int(scale * img.height)))
+            img = np.array(img, copy=False)
+            ansi_img = convert_ansci_color(img)
+            print(f"image: {img_path}")
+            print(
+                "\n".join(["".join(row) for row in to_color_str(ansi_img)]),
+            )
+            print()
+    except KeyboardInterrupt:
+        ...
+    return ret
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("img_path", help="the path to the image")
+    parser.add_argument(
+        "img_paths", nargs="+", metavar="IMG_PATH", help="the path to the image"
+    )
     parser.add_argument(
         "--adjust-to-height",
         action="store_true",
