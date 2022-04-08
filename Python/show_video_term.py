@@ -39,7 +39,9 @@ def show_video_term(video_path, fps=None):
             if frame_idx == 0:
                 scale = TERM_HIGHT / frame.shape[0]
             if scale < 1:
-                frame = cv2.resize(frame, None, fx=scale, fy=scale)
+                frame = cv2.resize(
+                    frame, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC
+                )
             ansi_img = convert_ansci_color(frame)
             print(
                 "\n".join(["".join(row) for row in to_color_str(ansi_img)]),
