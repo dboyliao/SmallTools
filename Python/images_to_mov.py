@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 
 import cv2
+import tqdm
 
 
 def imgs2mov(
@@ -26,16 +27,19 @@ def imgs2mov(
         key = lambda v: v
     img_names = sorted(img_names, key=key)
     print(f"reading frames from {input_dir}")
-    frames = [cv2.imread(name, cv2.IMREAD_COLOR) for name in img_names]
+    frames = []
+    for name in tqdm.tqdm(img_names):
+        frames.append(cv2.imread(name, cv2.IMREAD_COLOR))
     if flip_channels:
         if frames[0].shape[-1] == 4:
             shuffle_idxs = [2, 1, 0, 3]
         else:
             shuffle_idxs = [2, 1, 0]
         frames = [frame[:, :, shuffle_idxs] for frame in frames]
-    print("reading frames done")
+    print(f"reading frames done ({len(frames)} frames)")
     writer = cv2.VideoWriter(out_fname, fourcc, fps, frames[0].shape[:2][::-1])
-    for frame in frames:
+    print("writing frames")
+    for frame in tqdm.tqdm(frames):
         writer.write(frame)
     writer.release()
     print(f"movie saved: {out_fname} (fps: {fps})")
