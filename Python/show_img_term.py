@@ -1,15 +1,15 @@
 #!/usr/bin/env -S python3 -u
 # https://github.com/nikhilkumarsingh/terminal-image-viewer/blob/master/img-viewer.py
-from black import get_gitignore
-import cv2
+from PIL import Image
 import numpy as np
 import argparse
 
 from os import get_terminal_size
 import sys
 
-TERM_WIDTH = get_terminal_size().columns
-TERM_HEIGHT = get_terminal_size().lines
+_term_size = get_terminal_size()
+TERM_WIDTH = _term_size.columns
+TERM_HEIGHT = _term_size.lines
 
 
 def convert_ansci_color(img):
@@ -27,7 +27,7 @@ def convert_ansci_color(img):
     else:
         # color image
         img_f = img.astype(np.float64)
-        b, g, r = img_f[:, :, 0], img_f[:, :, 1], img_f[:, :, 2]
+        r, g, b = img_f[:, :, 0], img_f[:, :, 1], img_f[:, :, 2]
         ansi_img[:] = (
             16
             + (36 * np.round(r / 255 * 5))
@@ -43,15 +43,17 @@ def to_color_str(v):
 
 
 def show_img_term(img_path: str, adjust_to_height=False):
-    img = cv2.imread(img_path, cv2.IMREAD_ANYCOLOR)
-    if img is None:
+    try:
+        img = Image.open(img_path)
+    except FileNotFoundError:
         print(f"fail to read {img_path}")
         return 1
-    scale = TERM_WIDTH / img.shape[1]
+    scale = TERM_WIDTH / img.width
     if adjust_to_height:
-        scale = TERM_HEIGHT / img.shape[0]
+        scale = TERM_HEIGHT / img.height
     if scale < 1:
-        img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+        img = img.resize((int(scale * img.width), int(scale * img.height)))
+    img = np.array(img, copy=False)
     ansi_img = convert_ansci_color(img)
     print(
         "\n".join(["".join(row) for row in to_color_str(ansi_img)]),
