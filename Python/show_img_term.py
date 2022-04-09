@@ -17,23 +17,14 @@ def convert_ansci_color(img):
         img = np.squeeze(img)
     assert img.dtype == np.uint8, "incorrect image data type"
     ansi_img = np.zeros_like(img, shape=img.shape[:2])
-    if img.ndim < 3:
+    if img.ndim == 2:
         # gray scale
-        idx_under_8 = np.where(img < 8)
-        idx_over_248 = np.where(img > 248)
         ansi_img[:] = np.round(((img - 8) / 247) * 24) + 232
-        ansi_img[idx_under_8] = 16
-        ansi_img[idx_over_248] = 231
+        ansi_img[np.where(img < 8)] = 16
+        ansi_img[np.where(img > 248)] = 231
     else:
         # color image
-        img_f = img.astype(np.float64)
-        r, g, b = img_f[:, :, 0], img_f[:, :, 1], img_f[:, :, 2]
-        ansi_img[:] = (
-            16
-            + (36 * np.round(r / 255 * 5))
-            + (6 * np.round(g / 255 * 5))
-            + np.round(b / 255 * 5)
-        ).astype(np.uint8)
+        ansi_img[:] = 16 + np.round(img * (5 / 255)) @ [36, 6, 1]
     return ansi_img
 
 
