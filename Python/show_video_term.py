@@ -33,6 +33,7 @@ def show_video_term(video_path, fps=None):
     try:
         for frame_idx in range(num_frames):
             ok, frame = video.read()
+            frame = frame[:, :, ::-1]  # bgr to rgb
             if not ok:
                 print(f"failure on reading frame {frame_idx}")
                 break
