@@ -13,10 +13,14 @@ TERM_HEIGHT = _term_size.lines
 
 
 def convert_ansci_color(img):
-    if img.ndim == 3 and img.shape[-1] == 1:
-        img = np.squeeze(img)
-    assert img.dtype == np.uint8, "incorrect image data type"
-    ansi_img = np.zeros_like(img, shape=img.shape[:2])
+    if img.ndim == 3:
+        if img.shape[-1] == 1:
+            img = np.squeeze(img).astype(np.float64)
+        elif img.shape[-1] == 4:
+            # RGBA
+            alpha = img[:, :, 3].reshape(img.shape[:2] + (1,))
+            img = (img[:, :, :3] * (alpha / 255)).astype(np.float64)
+    ansi_img = np.zeros_like(img, shape=img.shape[:2], dtype=np.uint8)
     if img.ndim == 2:
         # gray scale
         ansi_img[:] = np.round(((img - 8) / 247) * 24) + 232

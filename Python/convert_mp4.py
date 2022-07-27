@@ -2,10 +2,9 @@
 import argparse
 import os
 import sys
-from math import ceil
-from time import time
 
 import cv2
+from tqdm import tqdm
 
 
 def convert_mp4(input_video):
@@ -27,39 +26,11 @@ def convert_mp4(input_video):
     else:
         fourcc = cv2.VideoWriter_fourcc(*"MP4V")
     writer = cv2.VideoWriter(out_fname, fourcc, fps, (width, height))
-    num_digits = len(str(num_frames))
-    fmt_str = f"[{{i:0{num_digits}d}}/{{num_frames}} {{percent:0.2f}}%] {{it_per_sec:0.2f}} it/s, eta {{eta:0.2f}} seconds"
-    time_start = time()
-    log_period = int(ceil(num_frames / 10))
-    for i in range(1, num_frames + 1):
+    for _ in tqdm(range(num_frames)):
         ret, frame = in_cap.read()
         if not ret:
             break
         writer.write(frame)
-        if i % log_period == 0:
-            time_end = time()
-            total_time = time_end - time_start
-            time_start = time_end
-            it_per_sec = total_time / log_period
-            eta = (num_frames - i) * it_per_sec
-            print(
-                fmt_str.format(
-                    i=i,
-                    num_frames=num_frames,
-                    percent=i * 100 / num_frames,
-                    it_per_sec=it_per_sec,
-                    eta=eta,
-                )
-            )
-    print(
-        fmt_str.format(
-            i=num_frames,
-            num_frames=num_frames,
-            percent=100.0,
-            it_per_sec=it_per_sec,
-            eta=0.0,
-        )
-    )
     in_cap.release()
     writer.release()
     return 0

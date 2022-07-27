@@ -4,7 +4,7 @@ from random import choices
 
 
 def main():
-    quotes = sys.stdin.readlines()
+    quotes = [line for line in sys.stdin.readlines() if not line.startswith("#")]
     print(choices(quotes, k=1)[0])
 
 

@@ -2,6 +2,7 @@
 import argparse
 import re
 from pathlib import Path
+from tqdm import tqdm
 
 import cv2
 
@@ -32,6 +33,7 @@ def extract_frames(
     frames = [video.read()[1] for _ in range(int(video.get(cv2.CAP_PROP_FRAME_COUNT)))]
     print("reading frames done")
     fps = video.get(cv2.CAP_PROP_FPS)
+    print(f"FPS: {fps}")
     video.release()
     if frame_indices is None:
         start_frame_idx = 0
@@ -49,15 +51,13 @@ def extract_frames(
         frame_indices = [i for i in range(start_frame_idx, end_frame_idx)]
     out_path = Path(out_dir)
     out_path.mkdir(exist_ok=True, parents=True)
-    for idx in frame_indices:
+    for idx in tqdm(frame_indices):
         if idx >= len(frames):
             print(f"invalid frame index detected, skipped: {idx}")
             continue
         img_path = out_path / f"{idx:04d}.png"
-        if cv2.imwrite(str(img_path), frames[idx]):
-            print(f"image saved: {img_path}")
-        else:
-            print(f"fail to save image: {img_path}")
+        cv2.imwrite(str(img_path), frames[idx])
+    print(f"frames saved in {out_path.absolute()}")
     return 0
 
 
