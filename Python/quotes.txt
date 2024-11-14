@@ -48,7 +48,7 @@ Any sufficiently advanced technology is indistinguishable from magic. -- Arthur 
 If you tell the truth, you don't have to remember anything -- Mark Twain
 In your current temperament, there is a hidden road, a book you've read, and a loved one -- adapted from Casablanca
 Mathematics is the art of giving the same name to different things -- Henri Poincaré
-In the pursuit of great, we fail to do good -- Viktor, Arcane (2021)
+In the pursuit of great, we failed to do good -- Viktor, Arcane (2021)
 能被原諒的很幸運，不被原諒也很正常；無恥的人不值得被原諒，無奈的人尚可體諒體諒。 -- 輕風乍起
 習慣落於人後，仍然虛心學習，日日是好日 -- 光影二三事
 良田千畝不過一日三餐，廣廈萬間只睡臥榻三尺 -- 《莊子》
@@ -64,3 +64,9 @@ The road to hell is paved with good intentions. -- Friedrich Hayek
 The one who can deceive you completely is the one you trust completely.
 等式兩邊是對同一觀點的不同看法 -- 高中人教版數學選修4-5
 Coincidence is God's way of remaining anonymous. -- Albert Einstein
+Life is like a dataset, seemingly random but full of hidden patterns
+如果每天都是死線，那就沒有死線了。 -- Michelle Hsieh (蔡炎龍老師轉述)
+如果你覺得教育的成本過高，那你應該試看看無知的代價 -- 哈佛大學前校長德里克博克
+If you think education is expensive,try ignorance! --  Derek Bok (former president of Harvard University)
+That which is static and repetitive is boring. That which is dynamic and random is confusing. In between lies art. -- John A. Locke
+Science is a differential equation. Religion is a boundary condition. -- Alan Turing
